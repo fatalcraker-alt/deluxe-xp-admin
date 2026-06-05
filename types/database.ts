@@ -92,6 +92,42 @@ export type Database = {
           },
         ]
       }
+      deudas_pepillo: {
+        Row: {
+          id: string
+          tipo: string
+          monto: number
+          descripcion: string | null
+          fecha_realizacion: string | null
+          fecha_limite: string | null
+          estado: string
+          fecha_pago: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          tipo: string
+          monto: number
+          descripcion?: string | null
+          fecha_realizacion?: string | null
+          fecha_limite?: string | null
+          estado?: string
+          fecha_pago?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          tipo?: string
+          monto?: number
+          descripcion?: string | null
+          fecha_realizacion?: string | null
+          fecha_limite?: string | null
+          estado?: string
+          fecha_pago?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       insumos: {
         Row: {
           cantidad: number
@@ -240,6 +276,11 @@ export type GastoInsert = Database["public"]["Tables"]["gastos"]["Insert"]
 
 export type Insumo = Database["public"]["Tables"]["insumos"]["Row"]
 export type InsumoInsert = Database["public"]["Tables"]["insumos"]["Insert"]
+
+export type DeudaPepillo = Database["public"]["Tables"]["deudas_pepillo"]["Row"]
+export type DeudaPepilloInsert = Database["public"]["Tables"]["deudas_pepillo"]["Insert"]
+export type TipoDeuda = "tarjeta_credito" | "prestamo_meses" | "dinero_extra" | "apuestas" | "otro"
+export type EstadoDeuda = "pendiente" | "pagado"
 
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"]
 
