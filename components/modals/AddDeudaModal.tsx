@@ -14,6 +14,7 @@ const TIPOS: { value: TipoDeuda; label: string; icon: string }[] = [
   { value: "prestamo_meses", label: "Préstamo a meses", icon: "📅" },
   { value: "dinero_extra", label: "Dinero extra", icon: "💵" },
   { value: "apuestas", label: "Apuestas", icon: "🎰" },
+  { value: "comida", label: "Comida / salidas", icon: "🍔" },
   { value: "otro", label: "Otro", icon: "📌" },
 ];
 

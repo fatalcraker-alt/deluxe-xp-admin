@@ -13,6 +13,7 @@ const TIPO_LABEL: Record<TipoDeuda, string> = {
   prestamo_meses: "Préstamo a meses",
   dinero_extra: "Dinero extra",
   apuestas: "Apuestas",
+  comida: "Comida / salidas",
   otro: "Otro",
 };
 
@@ -21,6 +22,7 @@ const TIPO_ICON: Record<TipoDeuda, string> = {
   prestamo_meses: "📅",
   dinero_extra: "💵",
   apuestas: "🎰",
+  comida: "🍔",
   otro: "📌",
 };
 

@@ -279,7 +279,7 @@ export type InsumoInsert = Database["public"]["Tables"]["insumos"]["Insert"]
 
 export type DeudaPepillo = Database["public"]["Tables"]["deudas_pepillo"]["Row"]
 export type DeudaPepilloInsert = Database["public"]["Tables"]["deudas_pepillo"]["Insert"]
-export type TipoDeuda = "tarjeta_credito" | "prestamo_meses" | "dinero_extra" | "apuestas" | "otro"
+export type TipoDeuda = "tarjeta_credito" | "prestamo_meses" | "dinero_extra" | "apuestas" | "comida" | "otro"
 export type EstadoDeuda = "pendiente" | "pagado"
 
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"]
