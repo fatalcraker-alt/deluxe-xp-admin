@@ -192,6 +192,7 @@ export type Database = {
         Row: {
           canal: string
           cantidad: number
+          cobrado: boolean
           created_at: string
           created_by: string | null
           fecha: string
@@ -205,6 +206,7 @@ export type Database = {
         Insert: {
           canal?: string
           cantidad?: number
+          cobrado?: boolean
           created_at?: string
           created_by?: string | null
           fecha?: string
@@ -218,6 +220,7 @@ export type Database = {
         Update: {
           canal?: string
           cantidad?: number
+          cobrado?: boolean
           created_at?: string
           created_by?: string | null
           fecha?: string

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import AddGastoModal from "@/components/modals/AddGastoModal";
+import EditGastoModal from "@/components/modals/EditGastoModal";
 import type { Gasto, CategoriaGasto } from "@/types/database";
 
 const CAT_LABELS: Record<CategoriaGasto, string> = {
@@ -20,6 +21,7 @@ interface Props {
 export default function GastosClient({ initialGastos, isAdmin }: Props) {
   const [gastos, setGastos] = useState<Gasto[]>(initialGastos);
   const [showAdd, setShowAdd] = useState(false);
+  const [editGasto, setEditGasto] = useState<Gasto | null>(null);
   const [filterCat, setFilterCat] = useState("todas");
   const [filterFecha, setFilterFecha] = useState("");
 
@@ -73,7 +75,7 @@ export default function GastosClient({ initialGastos, isAdmin }: Props) {
         <table className="w-full">
           <thead>
             <tr className="border-b border-border">
-              {["Fecha", "Categoría", "Descripción", "Monto"].map((h) => (
+              {["Fecha", "Categoría", "Descripción", "Monto", ""].map((h) => (
                 <th key={h} className="text-left font-sans text-[10px] tracking-widest uppercase text-brand-gray pb-2 pr-4 whitespace-nowrap">{h}</th>
               ))}
             </tr>
@@ -91,8 +93,18 @@ export default function GastosClient({ initialGastos, isAdmin }: Props) {
                     </span>
                   </td>
                   <td className="py-2.5 pr-4 font-sans text-xs text-brand-white">{g.descripcion}</td>
-                  <td className="py-2.5 font-sans text-sm text-alert-red font-medium tabular-nums">
+                  <td className="py-2.5 pr-4 font-sans text-sm text-alert-red font-medium tabular-nums">
                     -${g.monto.toFixed(2)}
+                  </td>
+                  <td className="py-2.5">
+                    {isAdmin && (
+                      <button
+                        onClick={() => setEditGasto(g)}
+                        className="font-sans text-[10px] tracking-widest uppercase text-brand-gray hover:text-brand-white border border-border hover:border-brand-gray px-2 py-0.5 transition-colors whitespace-nowrap"
+                      >
+                        Editar
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))
@@ -102,6 +114,16 @@ export default function GastosClient({ initialGastos, isAdmin }: Props) {
       </div>
 
       {showAdd && <AddGastoModal onClose={() => setShowAdd(false)} onAdded={onAdded} />}
+      {editGasto && (
+        <EditGastoModal
+          gasto={editGasto}
+          onClose={() => setEditGasto(null)}
+          onSaved={(updated) => {
+            setGastos((prev) => prev.map((g) => (g.id === updated.id ? updated : g)));
+            setEditGasto(null);
+          }}
+        />
+      )}
     </div>
   );
 }
