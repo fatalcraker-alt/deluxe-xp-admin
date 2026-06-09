@@ -5,9 +5,10 @@ import type { Fragancia } from "@/types/database";
 interface Props {
   fragancia: Fragancia;
   onReabastecer: () => void;
+  onEdit: () => void;
 }
 
-export default function FraganciaCard({ fragancia, onReabastecer }: Props) {
+export default function FraganciaCard({ fragancia, onReabastecer, onEdit }: Props) {
   const pct = Math.round((fragancia.ml_actuales / fragancia.ml_original) * 100);
   const isRed = pct < 15;
   const isYellow = pct >= 15 && pct <= 30;
@@ -72,13 +73,21 @@ export default function FraganciaCard({ fragancia, onReabastecer }: Props) {
         </div>
       )}
 
-      {/* Reabastecer */}
-      <button
-        onClick={onReabastecer}
-        className="w-full border border-border text-brand-gray font-sans text-[10px] tracking-widest uppercase py-2 hover:border-brand-white hover:text-brand-white transition-colors"
-      >
-        Reabastecer
-      </button>
+      {/* Acciones */}
+      <div className="flex gap-2">
+        <button
+          onClick={onEdit}
+          className="flex-1 border border-border text-brand-gray font-sans text-[10px] tracking-widest uppercase py-2 hover:border-brand-white hover:text-brand-white transition-colors"
+        >
+          Editar
+        </button>
+        <button
+          onClick={onReabastecer}
+          className="flex-1 border border-border text-brand-gray font-sans text-[10px] tracking-widest uppercase py-2 hover:border-brand-white hover:text-brand-white transition-colors"
+        >
+          Reabastecer
+        </button>
+      </div>
     </div>
   );
 }

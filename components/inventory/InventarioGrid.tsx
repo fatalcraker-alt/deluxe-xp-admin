@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import FraganciaCard from "./FraganciaCard";
 import AddFraganciaModal from "@/components/modals/AddFraganciaModal";
 import ReabastecerModal from "@/components/modals/ReabastecerModal";
+import EditFraganciaModal from "@/components/modals/EditFraganciaModal";
 import type { Fragancia } from "@/types/database";
 
 type Filter = "todas" | "critico" | "bajo" | "ok";
@@ -15,6 +16,7 @@ export default function InventarioGrid({ initialData }: { initialData: Fragancia
   const [search, setSearch] = useState("");
   const [showAdd, setShowAdd] = useState(false);
   const [reabastecerItem, setReabastecerItem] = useState<Fragancia | null>(null);
+  const [editItem, setEditItem] = useState<Fragancia | null>(null);
   const supabase = createClient();
 
   // Realtime subscription
@@ -113,6 +115,7 @@ export default function InventarioGrid({ initialData }: { initialData: Fragancia
               key={f.id}
               fragancia={f}
               onReabastecer={() => setReabastecerItem(f)}
+              onEdit={() => setEditItem(f)}
             />
           ))}
         </div>
@@ -123,6 +126,12 @@ export default function InventarioGrid({ initialData }: { initialData: Fragancia
         <ReabastecerModal
           fragancia={reabastecerItem}
           onClose={() => setReabastecerItem(null)}
+        />
+      )}
+      {editItem && (
+        <EditFraganciaModal
+          fragancia={editItem}
+          onClose={() => setEditItem(null)}
         />
       )}
     </div>
