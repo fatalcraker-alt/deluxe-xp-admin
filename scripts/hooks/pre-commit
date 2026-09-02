@@ -1,0 +1,118 @@
+#!/bin/sh
+# ══════════════════════════════════════════════════════════════════════════
+#  Guardián de secretos — bloquea el commit si una línea AÑADIDA trae una
+#  credencial conocida del ecosistema XP.
+# ══════════════════════════════════════════════════════════════════════════
+#
+#  Por qué existe: la noche del 27-ago-2026, dos agentes transcribieron
+#  contraseñas a reportes versionados. Alon las cazó a mano antes de
+#  commitear — pero pudo no haberlas cazado, y un secreto en un commit se
+#  queda en la historia aunque se borre después. Pedirle a un modelo que
+#  "no transcriba contraseñas" es una sugerencia (falla). Esto es un candado:
+#  la puerta no abre con un secreto encima. (regla candados-antes-de-cadencia)
+#
+#  Vive versionado. Se ACTIVA (config local, no viaja) con:
+#      git config core.hooksPath scripts/hooks
+#
+#  Bypass DELIBERADO — sólo cuando de verdad es un falso positivo:
+#      git commit --no-verify
+#
+#  Los secretos viven SÓLO en CLAUDE.local.md (gitignored). Nunca en un
+#  archivo versionado, un README de cliente, ni un handoff a Zar.
+
+# Sólo las líneas AÑADIDAS del stage (empiezan con '+' pero no '+++').
+# Se excluye scripts/hooks/ — el propio hook lleva los patrones como texto
+# literal y si no, se bloquearía a sí mismo al commitearse.
+added=$(git diff --cached --unified=0 --no-color -- . ':!scripts/hooks' | grep -E '^\+' | grep -vE '^\+\+\+')
+[ -z "$added" ] && exit 0
+
+# Patrones de secretos conocidos (ver CLAUDE.local.md). Se alimenta cuando
+# nace una credencial nueva en el ecosistema.
+patterns='dyce mkzh|241803|pollo2026|vitalia2026|caguas2026|bar2026|sbp_[A-Za-z0-9]|vcp_[A-Za-z0-9]|21st_sk_|eyJhbGciOi|5579 ?1004 ?2936 ?9588|OcaGe5EgQ|SwyzeAYbi|J9xUdbEm|tokenlocaldeprueba|-----BEGIN [A-Z ]*PRIVATE KEY-----'
+
+hits=$(printf '%s\n' "$added" | grep -nEi "$patterns")
+
+if [ -n "$hits" ]; then
+  echo ""
+  echo "🔴 COMMIT BLOQUEADO — el guardián encontró algo que parece una credencial:"
+  echo ""
+  printf '%s\n' "$hits" | sed 's/^/     /'
+  echo ""
+  echo "   Los secretos viven SÓLO en CLAUDE.local.md (gitignored)."
+  echo "   Redacta el valor (ej. 'ver CLAUDE.local.md') o, si es un falso"
+  echo "   positivo de verdad, commitea con:  git commit --no-verify"
+  echo ""
+  exit 1
+fi
+
+# ══════════════════════════════════════════════════════════════════════════
+#  Guardián de canales — un commit no escribe el punto de retorno de dos
+#  canales a la vez.
+# ══════════════════════════════════════════════════════════════════════════
+#
+#  Por qué existe: el 1-sep-2026 dos sesiones de Claude corrían en paralelo
+#  (una en Vitalia, otra en Saldo). Una reescribió SIGUIENTE.md entero y lo
+#  dejó diciendo que Vitalia no estaba desplegada cuando ya lo estaba. Un
+#  archivo que miente sobre el estado de un cliente se lee como verdad.
+#  (regla canales-en-paralelo)
+#
+#  LO QUE ESTE CANDADO NO PUEDE HACER, dicho de frente: git no sabe QUÉ
+#  sesión commitea — las dos ventanas viven en la misma carpeta. Así que
+#  NO hay candado contra `git add -A` ni contra un Write sobre un archivo
+#  compartido. Eso es disciplina. Esto sólo protege lo más caro.
+
+canales=$(git diff --cached --name-only | grep -E '^SIGUIENTE/[^/]+\.md$' | sort -u)
+n_canales=$(printf '%s\n' "$canales" | grep -c . )
+
+if [ "$n_canales" -gt 1 ]; then
+  echo ""
+  echo "🔴 COMMIT BLOQUEADO — este commit escribe el punto de retorno de $n_canales canales:"
+  echo ""
+  printf '%s\n' "$canales" | sed 's/^/     /'
+  echo ""
+  echo "   Cada sesión es dueña de UN canal y sólo escribe el suyo."
+  echo "   Si te llevaste el de otra ventana por un 'git add -A':"
+  echo "       git restore --staged SIGUIENTE/<el que no es tuyo>.md"
+  echo ""
+  echo "   Y a partir de aquí, stagea rutas explícitas — no '-A'."
+  echo ""
+  exit 1
+fi
+
+# ══════════════════════════════════════════════════════════════════════════
+#  Guardián de rutas — un enlace o una ruta que no lleva a ningún lado
+# ══════════════════════════════════════════════════════════════════════════
+#
+#  Por qué existe: el 1-sep-2026 se descubrió que `[[mostrar-antes-de-pushear]]`
+#  la citaban CINCO reglas —incluida la fase 6 del Sello, el último paso antes
+#  de entregarle algo a un cliente— y la regla NO EXISTÍA como archivo. Y que
+#  `captura-segundo-cerebro.md` llevaba 48 días apuntando a un archivo de
+#  Obsidian archivado el 15-jul.
+#
+#  Ninguna de las dos daba error: un enlace roto en markdown se ve exactamente
+#  igual que uno bueno. La regla que más se cita puede ser la que no existe.
+#  (regla una-verdad-por-cosa)
+#
+#  Sólo corre si el commit toca reglas o skills — es donde viven los enlaces.
+
+if git diff --cached --name-only | grep -qE '^\.claude/(rules|skills)/'; then
+  if command -v python >/dev/null 2>&1; then
+    if ! python scripts/auditar_informacion.py --rutas >/tmp/_rutas_xp 2>&1; then
+      echo ""
+      echo "🔴 COMMIT BLOQUEADO — hay enlaces o rutas que no llevan a ningún lado:"
+      echo ""
+      sed -n '/🔴/,$p' /tmp/_rutas_xp | sed 's/^/     /'
+      echo ""
+      echo "   Un enlace roto no da error y por eso dura meses. Arréglalo, o"
+      echo "   si de verdad es un falso positivo:  git commit --no-verify"
+      echo "   (y en ese caso enséñale el caso al detector, en"
+      echo "    scripts/auditar_informacion.py, o volverá a molestar mañana)"
+      echo ""
+      rm -f /tmp/_rutas_xp
+      exit 1
+    fi
+    rm -f /tmp/_rutas_xp
+  fi
+fi
+
+exit 0
