@@ -28,7 +28,15 @@ added=$(git diff --cached --unified=0 --no-color -- . ':!scripts/hooks' | grep -
 
 # Patrones de secretos conocidos (ver CLAUDE.local.md). Se alimenta cuando
 # nace una credencial nueva en el ecosistema.
-patterns='dyce mkzh|241803|pollo2026|vitalia2026|caguas2026|bar2026|sbp_[A-Za-z0-9]|vcp_[A-Za-z0-9]|21st_sk_|eyJhbGciOi|5579 ?1004 ?2936 ?9588|OcaGe5EgQ|SwyzeAYbi|J9xUdbEm|tokenlocaldeprueba|-----BEGIN [A-Z ]*PRIVATE KEY-----'
+# Patrones GENÉRICOS (forma de llave). Los concretos viven en .guardian-secretos, que NO se versiona
+# (hasta el 23-sep estaban escritos aquí completos: el candado guardaba lo que protegía).
+patterns='sbp_[A-Za-z0-9]|vcp_[A-Za-z0-9]|21st_sk_|eyJhbGciOi|tokenlocaldeprueba|-----BEGIN [A-Z ]*PRIVATE KEY-----'
+if [ -f .guardian-secretos ]; then
+  locales=$(grep -vE '^(#|$)' .guardian-secretos | paste -sd'|' -)
+  [ -n "$locales" ] && patterns="$patterns|$locales"
+else
+  echo "⚠️  guardián: falta .guardian-secretos — sólo se revisan los patrones genéricos" >&2
+fi
 
 hits=$(printf '%s\n' "$added" | grep -nEi "$patterns")
 
